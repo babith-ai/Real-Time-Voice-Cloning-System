@@ -35,6 +35,8 @@ const downloadBtn = document.getElementById('downloadBtn');
 const playBtn = document.getElementById('playBtn');
 const loading = document.getElementById('loading');
 const loadingText = document.getElementById('loadingText');
+const speedSlider = document.getElementById('speedSlider');
+const speedValue = document.getElementById('speedValue');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -51,6 +53,11 @@ function setupEventListeners() {
     synthesizeBtn.addEventListener('click', synthesizeText);
     downloadBtn.addEventListener('click', downloadAudio);
     playBtn.addEventListener('click', playAudio);
+    if (speedSlider) {
+        speedSlider.addEventListener('input', () => {
+            if (speedValue) speedValue.textContent = `${parseFloat(speedSlider.value).toFixed(2)}×`;
+        });
+    }
 }
 
 async function checkMicrophonePermission() {
@@ -285,10 +292,12 @@ function useRecording() {
     if (currentEmbedding) {
         showStatus('✓ Recording selected. Now write text to synthesize!', 'success');
         // Enable synthesis section
-        synthesisSection.classList.add('active');
+        synthesisSection.style.opacity = 1;
+        synthesisSection.style.pointerEvents = 'auto';
         textInput.disabled = false;
         synthesizeBtn.disabled = false;
-        outputSection.classList.add('active');
+        outputSection.style.opacity = 1;
+        outputSection.style.pointerEvents = 'auto';
     } else {
         showStatus('Error: No embedding available. Try recording again.', 'error');
     }
@@ -323,6 +332,10 @@ async function synthesizeText() {
             text: text,
             embedding: currentEmbedding
         };
+        // Include playback speed (librosa rate). Default 1.0 (no change)
+        if (speedSlider) {
+            payload.speed = parseFloat(speedSlider.value);
+        }
 
         const response = await fetch('/api/synthesize', {
             method: 'POST',

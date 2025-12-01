@@ -133,6 +133,10 @@ def handle_synthesize():
         
         # Convert embedding back to numpy array
         embed = np.array(embedding_list, dtype=np.float32)
+
+        # Optional speed parameter: <1.0 slows down, >1.0 speeds up
+        # Default 1.0 (no change)
+        speed = float(data.get('speed', 1.0))
         
         logger.info(f"Synthesizing: '{text}'")
         
@@ -146,12 +150,35 @@ def handle_synthesize():
         logger.info("Generating waveform...")
         wav = vocoder.infer_waveform(spec, normalize=True, batched=True)
         
-        # Postprocess
+        # Postprocess (pad a bit to avoid cutoff)
         wav = np.pad(wav, (0, synthesizer_model.sample_rate), mode="constant")
         wav = encoder.preprocess_wav(wav)
-        
+
         # Normalize
         wav = wav / np.max(np.abs(wav)) * 0.99 if np.max(np.abs(wav)) > 0 else wav
+
+        # Apply time-stretching if requested (slows/speeds without changing pitch)
+        if abs(speed - 1.0) > 1e-6:
+            try:
+                import librosa
+                logger.info(f"Applying time-stretch: rate={speed}")
+                # librosa.effects.time_stretch expects a 1-D numpy array (mono)
+                # Our outputs are mono, but if not, convert to mono
+                if wav.ndim > 1:
+                    wav_mono = np.mean(wav, axis=1)
+                else:
+                    wav_mono = wav
+
+                # librosa expects floats in (-inf, +inf) but normalized — keep current dtype
+                stretched = librosa.effects.time_stretch(wav_mono.astype(np.float32), rate=speed)
+
+                # After stretching, ensure amplitude normalization again
+                if np.max(np.abs(stretched)) > 0:
+                    stretched = stretched / np.max(np.abs(stretched)) * 0.99
+
+                wav = stretched.astype(np.float32)
+            except Exception as ts_err:
+                logger.warning(f"Time-stretch failed or librosa missing: {ts_err}. Skipping speed change.")
         
         # Convert to bytes
         audio_bytes = io.BytesIO()
