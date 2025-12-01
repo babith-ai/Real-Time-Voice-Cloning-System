@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Cloning Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎤 Voice Cloning Studio</h1>
+            <p class="subtitle">Record your voice and synthesize speech with AI</p>
+        </header>
+
+        <main>
+            <!-- Step 1: Recording -->
+            <section class="section" id="recording-section">
+                <div class="section-title">Step 1: Record Your Voice Sample</div>
+                
+                <div class="recording-controls">
+                    <button id="recordBtn" class="btn btn-primary">🔴 Start Recording</button>
+                    <button id="stopBtn" class="btn btn-danger" disabled>⏹ Stop Recording</button>
+                    <button id="clearBtn" class="btn btn-secondary">🗑 Clear</button>
+                </div>
+
+                <div class="info-box">
+                    <p>📝 Tips for best results:</p>
+                    <ul>
+                        <li>Speak clearly and naturally for 3-10 seconds</li>
+                        <li>Use a quiet environment to reduce background noise</li>
+                        <li>Maintain consistent volume throughout</li>
+                    </ul>
+                </div>
+
+                <div id="status" class="status-message"></div>
+                <div id="timer" class="timer hidden">Recording: <span id="time">00:00</span></div>
+
+                <!-- Waveform visualization -->
+                <div id="waveform-container" class="hidden">
+                    <canvas id="waveform"></canvas>
+                </div>
+
+                <!-- Audio playback -->
+                <div id="playback-section" class="hidden playback-section">
+                    <h3>Your Recording</h3>
+                    <audio id="recordedAudio" controls></audio>
+                    <button id="useBtn" class="btn btn-success">✓ Use This Recording</button>
+                </div>
+            </section>
+
+            <!-- Step 2: Synthesis -->
+            <section class="section" id="synthesis-section" style="opacity: 0.5; pointer-events: none;">
+                <div class="section-title">Step 2: Synthesize Speech</div>
+
+                <div class="input-group">
+                    <label for="textInput">Enter text to synthesize:</label>
+                    <textarea 
+                        id="textInput" 
+                        class="textarea" 
+                        placeholder="Type the text you want to synthesize here..." 
+                        disabled
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span> / 500 characters
+                    </div>
+                </div>
+
+                <button id="synthesizeBtn" class="btn btn-primary" disabled>
+                    🎵 Synthesize Speech
+                </button>
+
+                <div id="synthesis-status" class="status-message"></div>
+            </section>
+
+            <!-- Step 3: Output -->
+            <section class="section" id="output-section" style="opacity: 0.5; pointer-events: none;">
+                <div class="section-title">Step 3: Listen & Download</div>
+
+                <div id="output-audio-container" class="hidden output-section">
+                    <h3>Generated Speech</h3>
+                    <audio id="outputAudio" controls style="width: 100%;"></audio>
+
+                    <div class="output-actions">
+                        <button id="downloadBtn" class="btn btn-success">⬇ Download WAV</button>
+                        <button id="playBtn" class="btn btn-primary">▶ Play</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Real-Time Voice Cloning • Powered by SV2TTS</p>
+        </footer>
+    </div>
+
+    <!-- Loading spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p id="loadingText">Processing...</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
